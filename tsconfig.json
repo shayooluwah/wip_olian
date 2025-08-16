@@ -1,27 +1,25 @@
 {
+  "include": [
+    "remix.env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
   "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
+    "lib": ["DOM", "DOM.Iterable", "ES6"],
+    "isolatedModules": true,
     "esModuleInterop": true,
-    "module": "esnext",
+    "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "target": "ES2022",
+    "strict": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+      "~/*": ["./app/*"]
+    },
+    "noEmit": true
+  }
 }
