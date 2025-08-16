@@ -30,3 +30,10 @@ module.exports = {
     require('@tailwindcss/typography'),
   ],
 }
+module.exports = {
+  content: ["./app/**/*.{js,jsx,ts,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
