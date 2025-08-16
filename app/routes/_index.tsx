@@ -1,45 +1,48 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, Settings, Upload, Database, Shield, Menu, X, LogOut, Plus, MessageSquare } from 'lucide-react';
+// app/routes/_index.tsx
+import { useState, useRef, useEffect } from "react";
+import { Send, User, Bot, Settings, Upload, Database, Shield, Menu, X, LogOut, Plus, MessageSquare } from "lucide-react";
 
-const EnterpriseLLMApp = () => {
+export default function Index() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentView, setCurrentView] = useState('chat');
-  const [messages, setMessages] = useState([]);
+  const [currentView, setCurrentView] = useState<'chat' | 'settings'>('chat');
+  const [messages, setMessages] = useState<Array<{
+    id: number;
+    type: 'user' | 'assistant';
+    content: string;
+    timestamp: Date;
+  }>>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedModel, setSelectedModel] = useState('gpt-4');
-  const [conversations, setConversations] = useState([
-    { id: 1, title: 'New Conversation', active: true }
+  const [conversations, setConversations] = useState<Array<{ id: number; title: string; active: boolean }>>([
+    { id: 1, title: 'New Conversation', active: true },
   ]);
   const [activeConversation, setActiveConversation] = useState(1);
-  
+
   // Authentication states
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [user, setUser] = useState(null);
-  
+  const [user, setUser] = useState<{ username: string; role: string; organization: string } | null>(null);
+
   // Configuration states
-  const [apiConfigs, setApiConfigs] = useState([
+  const [apiConfigs] = useState([
     { name: 'OpenAI GPT-4', endpoint: 'https://api.openai.com/v1/chat/completions', key: '', model: 'gpt-4' },
-    { name: 'Claude', endpoint: 'https://api.anthropic.com/v1/messages', key: '', model: 'claude-3-opus' },
-    { name: 'Local Model', endpoint: 'http://localhost:11434/api/generate', key: '', model: 'llama2' }
-  ]);
-  
-  const messagesEndRef = useRef(null);
-  
+    ]);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  
+
   useEffect(scrollToBottom, [messages]);
-  
-  const handleLogin = (e) => {
+
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would authenticate with your backend
-    setUser({ 
-      username: loginForm.username, 
+    setUser({
+      username: loginForm.username,
       role: 'admin',
-      organization: 'Acme Corp'
+      organization: 'Acme Corp',
     });
     setIsLoggedIn(true);
     setMessages([
@@ -47,68 +50,68 @@ const EnterpriseLLMApp = () => {
         id: 1,
         type: 'assistant',
         content: `Welcome to your Enterprise LLM Assistant! I'm ready to help with your work while keeping your data secure and private.`,
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      },
     ]);
   };
-  
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUser(null);
     setMessages([]);
     setConversations([{ id: 1, title: 'New Conversation', active: true }]);
+    setActiveConversation(1);
     setLoginForm({ username: '', password: '' });
   };
-  
-  const handleSendMessage = async () => {
+
+  const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
-    
+
     const userMessage = {
       id: Date.now(),
-      type: 'user',
+      type: 'user' as const,
       content: inputMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
-    
-    setMessages(prev => [...prev, userMessage]);
+
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
-    
-    // Simulate API call to selected LLM
+
+    // Simulate API response
     setTimeout(() => {
       const assistantMessage = {
         id: Date.now() + 1,
-        type: 'assistant',
+        type: 'assistant' as const,
         content: `This is a simulated response from ${selectedModel}. In a real implementation, this would connect to your configured LLM API endpoint with your enterprise data context.\n\nYour message: "${userMessage.content}"\n\nI would process this using your organization's trained model and private knowledge base, ensuring data privacy and compliance with your security policies.`,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
       setIsLoading(false);
     }, 1000);
   };
-  
-  const handleKeyPress = (e) => {
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
-  
+
   const createNewConversation = () => {
-    const newId = Math.max(...conversations.map(c => c.id)) + 1;
+    const newId = Math.max(...conversations.map((c) => c.id)) + 1;
     const newConv = { id: newId, title: 'New Conversation', active: false };
     setConversations([...conversations, newConv]);
     setActiveConversation(newId);
     setMessages([]);
   };
-  
-  const switchConversation = (id) => {
-    setConversations(prev => prev.map(c => ({ ...c, active: c.id === id })));
+
+  const switchConversation = (id: number) => {
+    setConversations((prev) => prev.map((c) => ({ ...c, active: c.id === id })));
     setActiveConversation(id);
-    // In a real app, load conversation history here
     setMessages([]);
   };
-  
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -120,7 +123,7 @@ const EnterpriseLLMApp = () => {
             </div>
             <p className="text-gray-600">Secure AI for your organization</p>
           </div>
-          
+
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -129,12 +132,12 @@ const EnterpriseLLMApp = () => {
               <input
                 type="text"
                 value={loginForm.username}
-                onChange={(e) => setLoginForm(prev => ({ ...prev, username: e.target.value }))}
+                onChange={(e) => setLoginForm((prev) => ({ ...prev, username: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your username"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -142,13 +145,13 @@ const EnterpriseLLMApp = () => {
               <input
                 type="password"
                 value={loginForm.password}
-                onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))}
                 onKeyPress={(e) => e.key === 'Enter' && handleLogin(e)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your password"
               />
             </div>
-            
+
             <button
               onClick={handleLogin}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
@@ -156,7 +159,7 @@ const EnterpriseLLMApp = () => {
               Sign In
             </button>
           </div>
-          
+
           <div className="mt-6 text-center text-sm text-gray-500">
             Demo credentials: any username/password
           </div>
@@ -164,7 +167,7 @@ const EnterpriseLLMApp = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -183,7 +186,7 @@ const EnterpriseLLMApp = () => {
             </button>
           </div>
         </div>
-        
+
         <div className="p-4">
           <button
             onClick={createNewConversation}
@@ -192,9 +195,9 @@ const EnterpriseLLMApp = () => {
             <Plus className="h-4 w-4 mr-2" />
             New Chat
           </button>
-          
+
           <div className="space-y-2">
-            {conversations.map(conv => (
+            {conversations.map((conv) => (
               <button
                 key={conv.id}
                 onClick={() => switchConversation(conv.id)}
@@ -208,12 +211,12 @@ const EnterpriseLLMApp = () => {
             ))}
           </div>
         </div>
-        
+
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">{user.username}</span>
+            <span className="text-sm text-gray-600">{user?.username}</span>
             <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-              {user.organization}
+              {user?.organization}
             </span>
           </div>
           <div className="flex space-x-2">
@@ -234,7 +237,7 @@ const EnterpriseLLMApp = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
@@ -252,7 +255,7 @@ const EnterpriseLLMApp = () => {
               {currentView === 'chat' ? 'AI Assistant' : 'Configuration'}
             </h2>
           </div>
-          
+
           {currentView === 'chat' && (
             <div className="flex items-center space-x-4">
               <select
@@ -281,7 +284,7 @@ const EnterpriseLLMApp = () => {
             </div>
           )}
         </div>
-        
+
         {/* Chat View */}
         {currentView === 'chat' && (
           <>
@@ -314,7 +317,7 @@ const EnterpriseLLMApp = () => {
                   </div>
                 </div>
               ))}
-              
+
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="flex max-w-3xl">
@@ -335,7 +338,7 @@ const EnterpriseLLMApp = () => {
               )}
               <div ref={messagesEndRef} />
             </div>
-            
+
             <div className="p-4 bg-white border-t">
               <div className="flex items-end space-x-4">
                 <div className="flex-1">
@@ -345,7 +348,7 @@ const EnterpriseLLMApp = () => {
                     onKeyPress={handleKeyPress}
                     placeholder="Type your message... (Press Enter to send)"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                    rows="1"
+                    rows={1}
                     style={{ minHeight: '44px', maxHeight: '120px' }}
                   />
                 </div>
@@ -360,7 +363,7 @@ const EnterpriseLLMApp = () => {
             </div>
           </>
         )}
-        
+
         {/* Settings View */}
         {currentView === 'settings' && (
           <div className="flex-1 overflow-y-auto p-6">
@@ -402,7 +405,7 @@ const EnterpriseLLMApp = () => {
                   ))}
                 </div>
               </div>
-              
+
               {/* Data Training */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -417,7 +420,7 @@ const EnterpriseLLMApp = () => {
                       Choose Files
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                     <div className="text-center p-4 bg-gray-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">0</div>
@@ -434,7 +437,7 @@ const EnterpriseLLMApp = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Security Settings */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -451,7 +454,7 @@ const EnterpriseLLMApp = () => {
                       Enabled
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">Audit Logging</h4>
@@ -461,7 +464,7 @@ const EnterpriseLLMApp = () => {
                       Enabled
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-medium">Data Isolation</h4>
@@ -479,6 +482,4 @@ const EnterpriseLLMApp = () => {
       </div>
     </div>
   );
-};
-
-export default EnterpriseLLMApp;
+}
